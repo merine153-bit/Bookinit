@@ -1,0 +1,16 @@
+project_id = "passerelle-tcf"
+
+[functions.generate-lesson]
+verify_jwt = true
+
+[functions.generate-exam]
+verify_jwt = true
+
+[functions.grade-writing]
+verify_jwt = true
+
+[functions.grade-speaking]
+verify_jwt = true
+
+[functions.tutor-chat]
+verify_jwt = true

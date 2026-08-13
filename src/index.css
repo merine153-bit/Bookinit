@@ -1,0 +1,92 @@
+@import url("https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Inter:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --font-arabic: "Tajawal", "Inter", system-ui, sans-serif;
+
+  /* Passerelle TCF palette */
+  --color-brand-50: #eef2ff;
+  --color-brand-100: #e0e6fd;
+  --color-brand-200: #c2ccfb;
+  --color-brand-300: #97a4f5;
+  --color-brand-400: #6b76ec;
+  --color-brand-500: #4750dd;
+  --color-brand-600: #3536bd;
+  --color-brand-700: #2c2c98;
+  --color-brand-800: #1f2166;
+  --color-brand-900: #141433;
+  --color-brand-950: #0c0e26;
+
+  --color-accent-400: #ff8a65;
+  --color-accent-500: #ef5350;
+  --color-accent-600: #d32f2f;
+
+  --color-gold-400: #f6c453;
+  --color-gold-500: #e6a917;
+
+  --color-surface: #f5f6fb;
+  --color-surface-dark: #0c0e26;
+
+  --shadow-card: 0 1px 2px rgba(20, 20, 51, 0.04), 0 8px 24px -8px rgba(20, 20, 51, 0.10);
+  --shadow-card-hover: 0 4px 10px rgba(20, 20, 51, 0.06), 0 16px 32px -12px rgba(20, 20, 51, 0.16);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+html {
+  direction: rtl;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-arabic);
+  background: var(--color-surface);
+  color: var(--color-brand-950);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--color-brand-300);
+  color: white;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd0e6;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #aab0d6;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+@layer utilities {
+  .card {
+    background: white;
+    border-radius: 1rem;
+    box-shadow: var(--shadow-card);
+    border: 1px solid rgba(20, 20, 51, 0.05);
+  }
+  .card-hover {
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+  }
+  .card-hover:hover {
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-2px);
+  }
+}
