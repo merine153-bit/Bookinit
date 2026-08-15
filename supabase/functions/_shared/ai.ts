@@ -28,9 +28,13 @@ export async function askAI(params: {
         systemInstruction: { parts: [{ text: params.system }] },
         contents: [{ role: "user", parts: [{ text: params.user }] }],
         generationConfig: {
-          maxOutputTokens: params.maxTokens ?? 4096,
+          maxOutputTokens: params.maxTokens ?? 8192,
           temperature: 0.8,
           responseMimeType: "application/json",
+          // نماذج Gemini الحديثة "تفكّر" داخليًا قبل الإجابة، وهذه الرموز
+          // تُخصم من maxOutputTokens نفسه — نحدّها بميزانية صغيرة حتى لا
+          // تلتهم مساحة الرد الفعلي (JSON) وتتسبب في رد مبتور/غير صالح.
+          thinkingConfig: { thinkingBudget: 512 },
         },
       }),
     }
@@ -42,7 +46,15 @@ export async function askAI(params: {
   }
 
   const data = await res.json();
-  const text = data.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text ?? "").join("") ?? "";
+  const candidate = data.candidates?.[0];
+  const text = candidate?.content?.parts?.map((p: { text?: string }) => p.text ?? "").join("") ?? "";
+
+  if (candidate?.finishReason === "MAX_TOKENS" && !text.trim()) {
+    throw new Error(
+      "Gemini response truncated (MAX_TOKENS) with no usable output — increase maxTokens."
+    );
+  }
+
   return text;
 }
 

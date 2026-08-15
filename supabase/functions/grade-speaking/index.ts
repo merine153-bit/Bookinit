@@ -33,7 +33,7 @@ Deno.serve(async (req) => {
   const userMsg = `المهمة المطلوبة: "${prompt}"\n\nالتفريغ النصي لإجابة المتعلم الشفهية:\n"""${transcript}"""\n\nمستوى المتعلم المستهدف: CLB ${targetClb}.`;
 
   try {
-    const raw = await askAI({ system, user: userMsg, maxTokens: 2048 });
+    const raw = await askAI({ system, user: userMsg, maxTokens: 4096 });
     const result = extractJson(raw);
     return withCors(result);
   } catch (e) {

@@ -36,7 +36,11 @@ Deno.serve(async (req) => {
             })),
             { role: "user", parts: [{ text: message }] },
           ],
-          generationConfig: { maxOutputTokens: 1000, temperature: 0.8 },
+          generationConfig: {
+            maxOutputTokens: 2048,
+            temperature: 0.8,
+            thinkingConfig: { thinkingBudget: 512 },
+          },
         }),
       }
     );

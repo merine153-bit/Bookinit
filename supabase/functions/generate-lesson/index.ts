@@ -48,7 +48,7 @@ ${weakTags.length ? `ركّز خصوصًا على النقاط التالية ا
 أنشئ 5 تمارين متنوعة الصعوبة تدريجيًا.`;
 
   try {
-    const raw = await askAI({ system, user: userMsg, maxTokens: 4096 });
+    const raw = await askAI({ system, user: userMsg, maxTokens: 8192 });
     const lesson = extractJson<{
       title: string;
       title_ar: string;
