@@ -1,7 +1,7 @@
 # Passerelle TCF
 
 منصة تعليمية تفاعلية باللغة العربية لتعلّم الفرنسية الكيبيكية والتحضير لامتحان
-**TCF Canada**، مدعومة بوكيل ذكاء اصطناعي (Anthropic Claude) يولّد الدروس والأسئلة
+**TCF Canada**، مدعومة بوكيل ذكاء اصطناعي (Google Gemini) يولّد الدروس والأسئلة
 ويصحّح إجابات التعبير الكتابي والشفهي، فوق بنية تحتية من Supabase (مصادقة، قاعدة
 بيانات، تخزين).
 
@@ -9,7 +9,7 @@
 
 - **الواجهة**: React 19 + TypeScript + Vite + Tailwind CSS v4 (واجهة RTL بالكامل)
 - **الخلفية/القاعدة**: Supabase (Postgres + Auth + Storage + Edge Functions)
-- **الذكاء الاصطناعي**: Anthropic Claude API (عبر Supabase Edge Functions، المفتاح لا يُكشف أبدًا في المتصفح)
+- **الذكاء الاصطناعي**: Google Gemini API (طبقة مجانية، عبر Supabase Edge Functions، المفتاح لا يُكشف أبدًا في المتصفح)
 - **الصوت**: MediaRecorder API للتسجيل، Web Speech API للتفريغ النصي الفوري، SpeechSynthesis لمحاكاة الاستماع
 
 ## البدء السريع (تطوير محلي)
@@ -58,10 +58,12 @@ npm run dev
 يتطلب هذا الجزء [Supabase CLI](https://supabase.com/docs/guides/cli) مثبتًا على
 جهازك (وليس بالضرورة من هذه البيئة السحابية):
 
+احصل على مفتاح Gemini مجاني (بدون بطاقة دفع) من [aistudio.google.com/apikey](https://aistudio.google.com/apikey)، ثم:
+
 ```bash
 supabase login
 supabase link --project-ref <project-ref>
-supabase secrets set ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxxxxxxxx
+supabase secrets set GEMINI_API_KEY=AIzaxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 supabase functions deploy generate-lesson
 supabase functions deploy generate-exam
 supabase functions deploy grade-writing

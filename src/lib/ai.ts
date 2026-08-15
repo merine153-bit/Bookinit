@@ -3,7 +3,7 @@ import type { Question, SkillArea } from "../types";
 
 /**
  * طبقة اتصال بوكيل الذكاء الاصطناعي (Supabase Edge Functions).
- * كل الاستدعاءات تمر عبر Edge Functions التي تحمل مفتاح Anthropic سرًا في
+ * كل الاستدعاءات تمر عبر Edge Functions التي تحمل مفتاح Gemini سرًا في
  * الخادم (لا يُكشف أبدًا في المتصفح)، وتتحقق من هوية المستخدم عبر جلسة Supabase.
  */
 

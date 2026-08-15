@@ -1,8 +1,8 @@
 import { corsHeaders, withCors } from "../_shared/cors.ts";
 import { getRequestUser } from "../_shared/authUser.ts";
 
-const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
-const MODEL = "claude-sonnet-5";
+const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+const MODEL = "gemini-2.5-flash";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -10,8 +10,8 @@ Deno.serve(async (req) => {
   const user = await getRequestUser(req);
   if (!user) return withCors({ error: "غير مصرح" }, 401);
 
-  if (!ANTHROPIC_API_KEY) {
-    return withCors({ error: "ANTHROPIC_API_KEY غير مضبوط على الخادم." }, 500);
+  if (!GEMINI_API_KEY) {
+    return withCors({ error: "GEMINI_API_KEY غير مضبوط على الخادم." }, 500);
   }
 
   const { message, history = [], context = "" } = await req.json();
@@ -22,30 +22,28 @@ Deno.serve(async (req) => {
 أمثلة فرنسية عند الحاجة. ${context ? `سياق إضافي عن حالة المتعلم: ${context}` : ""}`;
 
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: 1000,
-        system,
-        messages: [
-          ...history.map((h: { role: string; content: string }) => ({
-            role: h.role,
-            content: h.content,
-          })),
-          { role: "user", content: message },
-        ],
-      }),
-    });
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: system }] },
+          contents: [
+            ...history.map((h: { role: string; content: string }) => ({
+              role: h.role === "assistant" ? "model" : "user",
+              parts: [{ text: h.content }],
+            })),
+            { role: "user", parts: [{ text: message }] },
+          ],
+          generationConfig: { maxOutputTokens: 1000, temperature: 0.8 },
+        }),
+      }
+    );
 
     if (!res.ok) throw new Error(await res.text());
     const data = await res.json();
-    const reply = data.content?.[0]?.text ?? "";
+    const reply = data.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text ?? "").join("") ?? "";
     return withCors({ reply });
   } catch (e) {
     return withCors({ error: String(e) }, 500);

@@ -1,5 +1,5 @@
 import { corsHeaders, withCors } from "../_shared/cors.ts";
-import { askClaude, extractJson } from "../_shared/anthropic.ts";
+import { askAI, extractJson } from "../_shared/ai.ts";
 import { getRequestUser } from "../_shared/authUser.ts";
 
 Deno.serve(async (req) => {
@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
   const userMsg = `الموضوع المطلوب: "${prompt}"\n\nنص المتعلم:\n"""${answer}"""\n\nمستوى المتعلم المستهدف: CLB ${targetClb}.`;
 
   try {
-    const raw = await askClaude({ system, user: userMsg, maxTokens: 1800 });
+    const raw = await askAI({ system, user: userMsg, maxTokens: 1800 });
     const result = extractJson(raw);
     return withCors(result);
   } catch (e) {

@@ -1,5 +1,5 @@
 import { corsHeaders, withCors } from "../_shared/cors.ts";
-import { askClaude, extractJson } from "../_shared/anthropic.ts";
+import { askAI, extractJson } from "../_shared/ai.ts";
 import { getRequestUser, serviceClient } from "../_shared/authUser.ts";
 
 const SKILL_LABELS: Record<string, string> = {
@@ -48,7 +48,7 @@ ${weakTags.length ? `ركّز خصوصًا على النقاط التالية ا
 أنشئ 5 تمارين متنوعة الصعوبة تدريجيًا.`;
 
   try {
-    const raw = await askClaude({ system, user: userMsg, maxTokens: 3000 });
+    const raw = await askAI({ system, user: userMsg, maxTokens: 3000 });
     const lesson = extractJson<{
       title: string;
       title_ar: string;

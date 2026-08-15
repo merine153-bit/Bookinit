@@ -1,5 +1,5 @@
 import { corsHeaders, withCors } from "../_shared/cors.ts";
-import { askClaude, extractJson } from "../_shared/anthropic.ts";
+import { askAI, extractJson } from "../_shared/ai.ts";
 import { getRequestUser, serviceClient } from "../_shared/authUser.ts";
 
 Deno.serve(async (req) => {
@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
 ولّد سؤالين إلى ثلاثة لكل مهارة.`;
 
   try {
-    const raw = await askClaude({ system, user: userMsg, maxTokens: 4000 });
+    const raw = await askAI({ system, user: userMsg, maxTokens: 4000 });
     const questions = extractJson<Record<string, unknown>[]>(raw);
 
     const db = serviceClient();
