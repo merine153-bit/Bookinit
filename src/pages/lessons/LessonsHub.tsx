@@ -33,9 +33,14 @@ export default function LessonsHub() {
         targetClb: profile?.target_clb ?? 7,
       });
       setAiLessonReady(true);
-    } catch {
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error("generate-lesson failed:", e);
+      const detail = e instanceof Error ? e.message : String(e);
       setAiError(
-        "وكيل الذكاء الاصطناعي غير مفعّل بعد لهذا المشروع. فعّل Edge Functions ومفتاح Anthropic API لتوليد دروس مخصصة تلقائيًا."
+        `وكيل الذكاء الاصطناعي غير مفعّل بعد لهذا المشروع، أو حدث خطأ أثناء توليد الدرس. ` +
+          `فعّل Edge Functions ومفتاح Gemini API لتوليد دروس مخصصة تلقائيًا.` +
+          (detail ? ` (${detail})` : "")
       );
     } finally {
       setAiLoading(false);

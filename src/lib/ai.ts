@@ -9,7 +9,26 @@ import type { Question, SkillArea } from "../types";
 
 async function invoke<T>(fn: string, body: Record<string, unknown>): Promise<T> {
   const { data, error } = await supabase.functions.invoke(fn, { body });
-  if (error) throw error;
+  if (error) {
+    // FunctionsHttpError.message هو نص عام ("non-2xx status code")، لذا نحاول
+    // قراءة جسم استجابة الخطأ الفعلي (context) الذي أرجعته دالتنا لعرض السبب
+    // الحقيقي بدل رسالة مبهمة.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const context = (error as any)?.context;
+    let realMessage: string | null = null;
+    if (context && typeof context.json === "function") {
+      try {
+        const body = await context.json();
+        if (body?.error) realMessage = String(body.error);
+      } catch {
+        /* تعذّرت قراءة جسم الاستجابة، سنرمي الخطأ الأصلي أدناه */
+      }
+    }
+    throw realMessage ? new Error(realMessage) : error;
+  }
+  if (data && typeof data === "object" && "error" in (data as Record<string, unknown>)) {
+    throw new Error(String((data as Record<string, unknown>).error));
+  }
   return data as T;
 }
 
