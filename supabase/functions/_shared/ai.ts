@@ -28,8 +28,9 @@ export async function askAI(params: {
         systemInstruction: { parts: [{ text: params.system }] },
         contents: [{ role: "user", parts: [{ text: params.user }] }],
         generationConfig: {
-          maxOutputTokens: params.maxTokens ?? 2000,
+          maxOutputTokens: params.maxTokens ?? 4096,
           temperature: 0.8,
+          responseMimeType: "application/json",
         },
       }),
     }

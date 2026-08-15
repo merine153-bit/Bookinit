@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
 ولّد سؤالين إلى ثلاثة لكل مهارة.`;
 
   try {
-    const raw = await askAI({ system, user: userMsg, maxTokens: 4000 });
+    const raw = await askAI({ system, user: userMsg, maxTokens: 6000 });
     const questions = extractJson<Record<string, unknown>[]>(raw);
 
     const db = serviceClient();
