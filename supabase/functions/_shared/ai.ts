@@ -6,7 +6,7 @@
  * احصل على مفتاح مجاني من: https://aistudio.google.com/apikey
  */
 const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
-const MODEL = "gemini-2.5-flash";
+const MODEL = "gemini-3.5-flash";
 
 export async function askAI(params: {
   system: string;
