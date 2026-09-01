@@ -48,41 +48,55 @@ npm run dev
 | `npm run lint` | فحص ESLint |
 | `npm run typecheck` | فحص أنواع TypeScript |
 | `npm run seed:generate` | توليد `supabase/seed.sql` من بيانات العرض |
+| `npm run seed:push` | رفع بيانات العرض إلى مشروع Supabase مباشرة |
 
 ---
 
 ## ربط Supabase
 
 1. أنشئ مشروعاً على [supabase.com](https://supabase.com).
-2. انسخ `.env.example` إلى `.env.local` واملأ:
+2. **المخطط:** افتح *SQL Editor → New query*، والصق محتوى `supabase/setup.sql`
+   كاملاً ثم شغّله. يحتوي على الجداول والفهارس والمحفّزات وسياسات RLS،
+   وهو آمن لإعادة التشغيل.
+3. **البيانات:** ارفع البيانات التجريبية العربية عبر PostgREST:
 
    ```bash
-   NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+   SUPABASE_URL=https://<ref>.supabase.co \
+   SUPABASE_SECRET_KEY=sb_secret_... \
+   npm run seed:push
    ```
 
-3. نفّذ الملفات التالية في SQL Editor بالترتيب:
+   > المفتاح السري يُقرأ من البيئة لحظة التشغيل فقط، ولا يُحفظ في المستودع
+   > ولا يصل إلى المتصفح. التطبيق نفسه لا يستخدم مفتاحاً سرياً إطلاقاً.
 
-   | الملف | المحتوى |
-   | --- | --- |
-   | `supabase/migrations/0001_init.sql` | الجداول والفهارس والمحفّزات |
-   | `supabase/migrations/0002_rls.sql` | سياسات أمان الصفوف (RLS) |
-   | `supabase/seed.sql` | البيانات التجريبية العربية |
+   بديل بلا سكربت: شغّل `supabase/seed.sql` في محرر SQL
+   (يُولَّد من نفس البيانات عبر `npm run seed:generate`).
 
-4. أنشئ حساب صاحب المطعم من صفحة `/login`، ثم اربطه بمطعمه:
+4. **متغيرات البيئة:** انسخ `.env.example` إلى `.env.local` واملأ:
+
+   ```bash
+   NEXT_PUBLIC_SUPABASE_URL=https://<ref>.supabase.co
+   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
+   ```
+
+   يدعم التطبيق صيغة المفاتيح الجديدة (`sb_publishable_…`) والقديمة
+   (`anon` JWT) معاً عبر `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+
+5. **حساب صاحب المطعم:** ينشئ `npm run seed:push` الربط تلقائياً لحساب
+   بريده `owner@eatit.app` إن وُجد. لربط حساب آخر:
 
    ```sql
    update public.users set role = 'RESTAURANT_OWNER' where id = '<auth-user-id>';
    update public.restaurants set owner_id = '<auth-user-id>' where slug = 'maqha-alnoor';
    ```
 
-5. لتفعيل الدخول عبر Google: فعّل مزوّد Google في
-   *Authentication → Providers* وأضف `https://<domain>/auth/callback` إلى روابط العودة.
+6. **الدخول عبر Google (اختياري):** فعّل المزوّد في
+   *Authentication → Providers*، وأضف `https://<domain>/auth/callback` إلى
+   روابط العودة، ثم اضبط `NEXT_PUBLIC_ENABLE_GOOGLE_AUTH=true`.
+   بدون ذلك لا يظهر زر Google أصلاً — تفادياً لزر لا يعمل.
 
 بمجرد وجود المتغيرات، تتحول كل استعلامات التطبيق تلقائياً إلى Supabase — لا يوجد
 كود يحتاج التعديل (انظر `lib/data/repository.ts`).
-
----
 
 ## بنية المشروع
 
@@ -125,7 +139,7 @@ lib/
 
 hooks/         حالة الإعجاب والحفظ والمتابعة (تُحفظ محلياً)
 types/         أنواع النطاق
-supabase/      الهجرات والبيانات التجريبية
+supabase/      الهجرات وسياسات RLS والبيانات التجريبية
 public/images/ صور الطعام والأماكن (محلية — لا روابط خارجية تنكسر)
 ```
 

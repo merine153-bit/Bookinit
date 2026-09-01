@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "seed:generate": "tsx scripts/generate-seed.ts"
+    "seed:generate": "tsx scripts/generate-seed.ts",
+    "seed:push": "tsx scripts/seed-supabase.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

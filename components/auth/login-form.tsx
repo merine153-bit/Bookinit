@@ -11,7 +11,7 @@ import { SubmitButton } from "@/components/dashboard/form-status";
 import { Field, Input } from "@/components/ui/field";
 import { useToast } from "@/components/ui/toast";
 import { createClient } from "@/lib/supabase/client";
-import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { isGoogleAuthEnabled, isSupabaseConfigured } from "@/lib/supabase/config";
 import { demoSignIn } from "@/app/actions/auth";
 import { cn } from "@/lib/utils";
 
@@ -167,15 +167,19 @@ export function LoginForm() {
         </Button>
       </form>
 
-      <div className="flex items-center gap-4">
-        <hr className="flex-1 border-t border-outline-variant/40" />
-        <span className="font-body text-label-sm text-on-surface-variant">أو</span>
-        <hr className="flex-1 border-t border-outline-variant/40" />
-      </div>
+      {isGoogleAuthEnabled && (
+        <>
+          <div className="flex items-center gap-4">
+            <hr className="flex-1 border-t border-outline-variant/40" />
+            <span className="font-body text-label-sm text-on-surface-variant">أو</span>
+            <hr className="flex-1 border-t border-outline-variant/40" />
+          </div>
 
-      <Button variant="secondary" size="full" onClick={signInWithGoogle}>
-        المتابعة عبر Google
-      </Button>
+          <Button variant="secondary" size="full" onClick={signInWithGoogle}>
+            المتابعة عبر Google
+          </Button>
+        </>
+      )}
     </div>
   );
 }
