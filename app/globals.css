@@ -1,0 +1,254 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   Eatit — نظام التصميم "Gourmet Minimalist"
+   المصدر الوحيد للحقيقة البصرية: ملف التصميم المرفق (DESIGN.md + الشاشات).
+   ========================================================================== */
+
+@theme {
+  /* ---------- الألوان ---------- */
+  --color-primary: #b3290f;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #ff5f40;
+  --color-on-primary-container: #5f0a00;
+  --color-primary-fixed: #ffdad3;
+  --color-primary-fixed-dim: #ffb4a5;
+  --color-on-primary-fixed: #3e0400;
+  --color-on-primary-fixed-variant: #8e1500;
+  --color-inverse-primary: #ffb4a5;
+
+  --color-secondary: #2e6767;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #b1eae9;
+  --color-on-secondary-container: #336b6b;
+  --color-secondary-fixed: #b4edec;
+  --color-secondary-fixed-dim: #98d1d0;
+  --color-on-secondary-fixed: #002020;
+  --color-on-secondary-fixed-variant: #104f4f;
+
+  --color-tertiary: #5f5e5a;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #96948f;
+  --color-on-tertiary-container: #2d2d29;
+  --color-tertiary-fixed: #e5e2dc;
+  --color-tertiary-fixed-dim: #c9c6c1;
+  --color-on-tertiary-fixed: #1c1c18;
+  --color-on-tertiary-fixed-variant: #474743;
+
+  --color-background: #fcf9f8;
+  --color-on-background: #1b1c1c;
+  --color-surface: #fcf9f8;
+  --color-on-surface: #1b1c1c;
+  --color-on-surface-variant: #5a413b;
+  --color-surface-dim: #dcd9d9;
+  --color-surface-bright: #fcf9f8;
+  --color-surface-variant: #e4e2e1;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f6f3f2;
+  --color-surface-container: #f0eded;
+  --color-surface-container-high: #eae7e7;
+  --color-surface-container-highest: #e4e2e1;
+  --color-inverse-surface: #303030;
+  --color-inverse-on-surface: #f3f0f0;
+
+  --color-outline: #8e706a;
+  --color-outline-variant: #e3beb7;
+
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+
+  /* نجوم التقييم — "Honey Gold" */
+  --color-honey: #ffb800;
+
+  /* ---------- الخطوط ---------- */
+  --font-display: var(--font-montserrat), var(--font-cairo), "Segoe UI", sans-serif;
+  --font-body: var(--font-be-vietnam), var(--font-plex-arabic), "Segoe UI", sans-serif;
+
+  /* ---------- المقاييس الطباعية ---------- */
+  --text-display-lg: 48px;
+  --text-display-lg--line-height: 56px;
+  --text-display-lg--font-weight: 700;
+  --text-display-lg--letter-spacing: -0.02em;
+
+  --text-headline-lg: 32px;
+  --text-headline-lg--line-height: 40px;
+  --text-headline-lg--font-weight: 700;
+
+  --text-headline-mobile: 28px;
+  --text-headline-mobile--line-height: 36px;
+  --text-headline-mobile--font-weight: 700;
+
+  --text-headline-md: 24px;
+  --text-headline-md--line-height: 32px;
+  --text-headline-md--font-weight: 600;
+
+  --text-body-lg: 18px;
+  --text-body-lg--line-height: 28px;
+  --text-body-lg--font-weight: 400;
+
+  --text-body-md: 16px;
+  --text-body-md--line-height: 24px;
+  --text-body-md--font-weight: 400;
+
+  --text-label-md: 14px;
+  --text-label-md--line-height: 20px;
+  --text-label-md--font-weight: 600;
+
+  --text-label-sm: 12px;
+  --text-label-sm--line-height: 16px;
+  --text-label-sm--font-weight: 500;
+
+  /* ---------- المسافات (نظام 8px) ---------- */
+  --spacing-unit: 8px;
+  --spacing-stack-sm: 4px;
+  --spacing-stack-md: 12px;
+  --spacing-stack-lg: 24px;
+  --spacing-gutter: 16px;
+  --spacing-container-margin: 20px;
+
+  /* ---------- الأشكال ---------- */
+  --radius-sm: 0.25rem;
+  --radius-DEFAULT: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+
+  /* ---------- الظلال ---------- */
+  --shadow-level-1: 0px 4px 20px rgba(0, 0, 0, 0.04);
+  --shadow-level-2: 0px 8px 24px rgba(0, 0, 0, 0.08);
+  --shadow-nav: 0px -4px 20px rgba(0, 0, 0, 0.04);
+  --shadow-top: 0px 4px 20px rgba(0, 0, 0, 0.04);
+
+  /* ---------- الحركة ---------- */
+  --animate-pop: pop 220ms cubic-bezier(0.2, 0.9, 0.3, 1.4);
+  --animate-fade-up: fade-up 260ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-scale-in: scale-in 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-shimmer: shimmer 1.6s linear infinite;
+}
+
+@keyframes pop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.28); }
+  100% { transform: scale(1); }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+@layer base {
+  * {
+    border-color: color-mix(in srgb, var(--color-outline-variant) 30%, transparent);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-on-background);
+    font-family: var(--font-body);
+    font-size: var(--text-body-md);
+    line-height: 24px;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+
+  /* حالات التركيز — واضحة ومتناسقة مع الهوية */
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* الأرقام دائماً بالاتجاه الصحيح داخل النص العربي */
+  .numeric {
+    font-feature-settings: "tnum";
+    direction: ltr;
+    unicode-bidi: isolate;
+    display: inline-block;
+  }
+}
+
+@layer utilities {
+  .hide-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* الحلقة المتدرجة حول قصص المطاعم */
+  .story-ring {
+    background: linear-gradient(to right, var(--color-primary-container), var(--color-secondary));
+    padding: 2px;
+    border-radius: 9999px;
+  }
+  .story-ring-seen {
+    background: var(--color-surface-variant);
+  }
+
+  /* زجاجية خفيفة للأشرطة العلوية والسفلية */
+  .glass {
+    background-color: color-mix(in srgb, var(--color-surface) 80%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* ---------- خريطة Leaflet ---------- */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  background: var(--color-surface-container-low);
+  font-family: var(--font-body);
+  z-index: 0;
+}
+.leaflet-control-attribution {
+  font-size: 10px;
+  background: color-mix(in srgb, #ffffff 80%, transparent) !important;
+  direction: ltr;
+}
+.leaflet-control-zoom a {
+  color: var(--color-on-surface-variant) !important;
+  border-color: color-mix(in srgb, var(--color-outline-variant) 40%, transparent) !important;
+}
+.eatit-marker {
+  background: transparent;
+  border: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
