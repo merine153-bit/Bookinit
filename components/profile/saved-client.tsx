@@ -72,6 +72,7 @@ export function SavedClient({
         {TABS.map((option) => (
           <button
             key={option}
+            type="button"
             role="tab"
             aria-selected={tab === option}
             onClick={() => setTab(option)}

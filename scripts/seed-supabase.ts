@@ -127,6 +127,9 @@ async function main() {
       city: r.city,
       latitude: r.latitude,
       longitude: r.longitude,
+      // الرصيد التاريخي: يُدمج مع تقييمات جدول reviews عبر محفّز قاعدة البيانات.
+      base_rating: r.rating,
+      base_review_count: r.reviewCount,
       rating: r.rating,
       review_count: r.reviewCount,
       follower_count: r.followerCount,

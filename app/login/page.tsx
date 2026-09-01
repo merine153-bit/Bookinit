@@ -8,7 +8,15 @@ export const metadata = {
   description: "سجّل الدخول إلى Eatit لحفظ أماكنك المفضلة ومتابعة مطاعمك.",
 };
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
+  const { next } = await searchParams;
+  // نقبل المسارات الداخلية فقط تفادياً لإعادة التوجيه إلى موقع خارجي.
+  const target = next?.startsWith("/") && !next.startsWith("//") ? next : "/profile";
+
   return (
     <main id="main" className="min-h-dvh flex flex-col items-center justify-center px-container-margin py-stack-lg">
       <div className="w-full max-w-md flex flex-col gap-stack-lg">
@@ -23,7 +31,7 @@ export default function LoginPage() {
         </div>
 
         <Card className="p-container-margin">
-          <LoginForm />
+          <LoginForm next={target} />
         </Card>
 
         <Link

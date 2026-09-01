@@ -34,6 +34,7 @@ export function FilterChips<T extends string>({
         return (
           <button
             key={option}
+            type="button"
             role="tab"
             aria-selected={active}
             onClick={() => onChange(option)}

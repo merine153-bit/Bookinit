@@ -12,7 +12,7 @@ import { Field, Input } from "@/components/ui/field";
 import { useToast } from "@/components/ui/toast";
 import { createClient } from "@/lib/supabase/client";
 import { isGoogleAuthEnabled, isSupabaseConfigured } from "@/lib/supabase/config";
-import { demoSignIn } from "@/app/actions/auth";
+import { demoSignIn, signIn, signUp } from "@/app/actions/auth";
 import { cn } from "@/lib/utils";
 
 const schema = z.object({
@@ -24,7 +24,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 type Mode = "signin" | "signup";
 
-export function LoginForm() {
+export function LoginForm({ next = "/profile" }: { next?: string }) {
   const router = useRouter();
   const toast = useToast();
   const [mode, setMode] = React.useState<Mode>("signin");
@@ -35,32 +35,24 @@ export function LoginForm() {
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({ resolver: zodResolver(schema), mode: "onBlur" });
 
+  // المصادقة تُنفَّذ على الخادم فتُكتب الجلسة في الكوكيز مباشرة.
   const onSubmit = async (values: FormValues) => {
-    const supabase = createClient();
-    if (!supabase) return;
-
     const result =
       mode === "signin"
-        ? await supabase.auth.signInWithPassword({
+        ? await signIn({ email: values.email, password: values.password })
+        : await signUp({
             email: values.email,
             password: values.password,
-          })
-        : await supabase.auth.signUp({
-            email: values.email,
-            password: values.password,
-            options: { data: { full_name: values.fullName ?? "" } },
+            fullName: values.fullName,
           });
 
-    if (result.error) {
-      toast(result.error.message, "error");
+    if (!result.ok) {
+      toast(result.message, "error");
       return;
     }
-    if (mode === "signup" && !result.data.session) {
-      toast("تم إنشاء الحساب — تحقق من بريدك لتأكيد التسجيل.", "info");
-      return;
-    }
-    toast("تم تسجيل الدخول بنجاح");
-    router.push("/profile");
+
+    toast(result.message);
+    router.push(next);
     router.refresh();
   };
 
@@ -112,6 +104,7 @@ export function LoginForm() {
         {(["signin", "signup"] as const).map((option) => (
           <button
             key={option}
+            type="button"
             role="tab"
             aria-selected={mode === option}
             onClick={() => setMode(option)}
