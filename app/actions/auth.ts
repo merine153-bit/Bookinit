@@ -18,15 +18,37 @@ interface Credentials {
   fullName?: string;
 }
 
-/** يترجم رسائل Supabase الإنجليزية إلى رسائل عربية مفهومة. */
-function translateAuthError(message: string): string {
-  const m = message.toLowerCase();
-  if (m.includes("invalid login credentials")) return "البريد الإلكتروني أو كلمة المرور غير صحيحة.";
-  if (m.includes("email not confirmed")) return "لم يُفعّل بريدك بعد — تحقق من رسالة التأكيد.";
-  if (m.includes("user already registered")) return "هذا البريد مسجّل مسبقاً. جرّب تسجيل الدخول.";
+/**
+ * يترجم أخطاء Supabase إلى رسائل عربية مفهومة.
+ * تُفحص رموز الأخطاء أولاً لأنها مستقرة، ثم نص الرسالة كاحتياط.
+ */
+function translateAuthError(error: { message: string; code?: string }): string {
+  const code = error.code ?? "";
+  const m = error.message.toLowerCase();
+
+  // كلمة مرور مسرَّبة — يظهر عند تفعيل Leaked Password Protection في Supabase.
+  if (code === "weak_password" || m.includes("known to be weak") || m.includes("easy to guess")) {
+    return "كلمة المرور هذه ظهرت في تسريبات معروفة — اختر كلمة مرور أخرى.";
+  }
+  if (code === "invalid_credentials" || m.includes("invalid login credentials")) {
+    return "البريد الإلكتروني أو كلمة المرور غير صحيحة.";
+  }
+  if (code === "email_not_confirmed" || m.includes("email not confirmed")) {
+    return "لم يُفعّل بريدك بعد — تحقق من رسالة التأكيد.";
+  }
+  if (code === "user_already_exists" || m.includes("user already registered")) {
+    return "هذا البريد مسجّل مسبقاً. جرّب تسجيل الدخول.";
+  }
   if (m.includes("password should be")) return "كلمة المرور قصيرة جداً.";
-  if (m.includes("rate limit") || m.includes("too many")) return "محاولات كثيرة — انتظر قليلاً ثم أعد المحاولة.";
-  return message;
+  if (code === "over_request_rate_limit" || m.includes("rate limit") || m.includes("too many")) {
+    return "محاولات كثيرة — انتظر قليلاً ثم أعد المحاولة.";
+  }
+  if (code === "signup_disabled") return "التسجيل معطّل حالياً في هذا المشروع.";
+  if (code === "validation_failed" && m.includes("provider is not enabled")) {
+    return "طريقة الدخول هذه غير مفعّلة في المشروع.";
+  }
+
+  return error.message;
 }
 
 /**
@@ -38,7 +60,7 @@ export async function signIn({ email, password }: Credentials): Promise<AuthResu
   if (!supabase) return { ok: false, message: "لم تُربط قاعدة البيانات بعد." };
 
   const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return { ok: false, message: translateAuthError(error.message) };
+  if (error) return { ok: false, message: translateAuthError(error) };
 
   revalidatePath("/", "layout");
   return { ok: true, message: "تم تسجيل الدخول بنجاح." };
@@ -59,7 +81,7 @@ export async function signUp({ email, password, fullName }: Credentials): Promis
       },
     },
   });
-  if (error) return { ok: false, message: translateAuthError(error.message) };
+  if (error) return { ok: false, message: translateAuthError(error) };
 
   if (!data.session) {
     return { ok: false, message: "أنشئ حسابك — تحقّق من بريدك لتأكيد التسجيل ثم سجّل الدخول." };
