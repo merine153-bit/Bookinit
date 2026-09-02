@@ -33,6 +33,14 @@ const headers = {
   "Content-Type": "application/json",
 };
 
+/** هل هجرة الرصيد التاريخي (0003) مطبَّقة على هذه القاعدة؟ */
+let hasBaseline = false;
+
+async function detectBaseline() {
+  const probe = await fetch(`${URL_BASE}/rest/v1/restaurants?select=base_rating&limit=1`, { headers });
+  hasBaseline = probe.ok;
+}
+
 /** معرّف UUID ثابت مشتق من معرّف نصي — يجعل التشغيل قابلاً للتكرار. */
 function uuidFrom(value: string): string {
   const h = createHash("md5").update(`eatit:${value}`).digest("hex");
@@ -93,7 +101,42 @@ async function linkOwner(email: string, slug: string, fullName: string, username
   console.log(`  ربط ${email} بمطعم ${slug}`);
 }
 
+
+/**
+ * يعيد أرقام التقييم المتراكمة إلى قيمها المصمَّمة.
+ *
+ * محفّز قاعدة البيانات يحسب المتوسط من جدول reviews وحده، فمطعم له تقييمان
+ * يظهر بـ«5.0 من تقييمين» بدل رقمه الحقيقي. الحل الصحيح هو هجرة
+ * 0003_rating_baseline.sql التي تفصل الرصيد التاريخي عن التقييمات الحيّة؛
+ * فإن كانت مطبَّقة نكتفي بها، وإلا نعيد ضبط الأرقام مباشرة كحل احتياطي.
+ */
+async function restoreAggregates() {
+  if (hasBaseline) {
+    console.log("  هجرة الرصيد التاريخي مطبَّقة — المحفّز يتولى الحساب.");
+    return;
+  }
+
+  console.log("استعادة أرقام التقييم المصمَّمة…");
+  for (const r of demoRestaurants) {
+    await request("PATCH", `restaurants?id=eq.${uuidFrom(r.id)}`, {
+      rating: r.rating,
+      review_count: r.reviewCount,
+    });
+  }
+  console.log(
+    `  أُعيد ضبط ${demoRestaurants.length} مطعماً. ` +
+      "لجعل التقييمات الجديدة تُحدّث المتوسط تلقائياً، طبّق supabase/migrations/0003_rating_baseline.sql.",
+  );
+}
+
 async function main() {
+  await detectBaseline();
+  console.log(
+    hasBaseline
+      ? "هجرة الرصيد التاريخي مطبَّقة."
+      : "هجرة الرصيد التاريخي غير مطبَّقة — سيُستخدم الحل الاحتياطي.",
+  );
+
   console.log("مسح البيانات السابقة…");
   for (const table of [
     "post_comments",
@@ -127,11 +170,10 @@ async function main() {
       city: r.city,
       latitude: r.latitude,
       longitude: r.longitude,
-      // الرصيد التاريخي: يُدمج مع تقييمات جدول reviews عبر محفّز قاعدة البيانات.
-      base_rating: r.rating,
-      base_review_count: r.reviewCount,
       rating: r.rating,
       review_count: r.reviewCount,
+      // الرصيد التاريخي: يُدمج مع تقييمات جدول reviews عبر محفّز قاعدة البيانات.
+      ...(hasBaseline ? { base_rating: r.rating, base_review_count: r.reviewCount } : {}),
       follower_count: r.followerCount,
       like_count: r.likeCount,
       price_range: r.priceRange,
@@ -237,6 +279,8 @@ async function main() {
       created_at: r.createdAt,
     })),
   );
+
+  await restoreAggregates();
 
   console.log("ربط حساب صاحب المطعم…");
   await linkOwner("owner@eatit.app", "maqha-alnoor", "مقهى النور", "@maqha_alnoor");
