@@ -1,0 +1,30 @@
+# ---------------------------------------------------------------------
+# Eatit — إعداد النشر على Netlify
+#
+# إضافة Next.js الرسمية تتولى App Router ومكوّنات الخادم و middleware
+# و next/image، فلا حاجة لضبط output أو مجلد الدوال يدوياً.
+# ---------------------------------------------------------------------
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# الصور المحلية ثابتة ولا تتغيّر — خزّنها طويلاً في الطرف.
+[[headers]]
+  for = "/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# ترويسات أمان أساسية.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "SAMEORIGIN"

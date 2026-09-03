@@ -104,33 +104,44 @@ npm run dev
 بمجرد وجود المتغيرات، تتحول كل استعلامات التطبيق تلقائياً إلى Supabase — لا يوجد
 كود يحتاج التعديل (انظر `lib/data/repository.ts`).
 
-## النشر على Vercel
+## النشر على Netlify
 
-التطبيق جاهز للنشر بلا تعديل: `next build` ينجح، والصور محلية ومضغوطة.
+المشروع مهيّأ عبر `netlify.toml`: أمر البناء، Node 22، إضافة Next.js
+الرسمية، وترويسات التخزين المؤقت والأمان.
 
 > ⚠️ **انتبه للفرع.** هذا المستودع يحوي أكثر من مشروع على فروع مختلفة،
-> وفرعه الافتراضي ليس فرع Eatit. لا بد من ضبط فرع الإنتاج يدوياً وإلا
-> بنى Vercel المشروع الخطأ.
+> وفرعه الافتراضي ليس فرع Eatit. اختر الفرع الصحيح عند الربط.
 
-1. **اربط المستودع:** Vercel → Add New Project → اختر المستودع.
-2. **اضبط فرع الإنتاج:** Settings → Git → *Production Branch* →
-   `claude/eatit-web-app-r6zj7c`
-3. **أضف متغيّرات البيئة** (Settings → Environment Variables، لكل البيئات):
+1. **اربط المستودع:** Netlify → *Add new site* → *Import an existing project*
+   → اختر المستودع.
+2. **اختر الفرع:** *Branch to deploy* = `claude/eatit-web-app-r6zj7c`
+3. **أضف متغيّرات البيئة** قبل أول بناء
+   (*Site configuration → Environment variables*):
 
    ```
    NEXT_PUBLIC_SUPABASE_URL=https://<ref>.supabase.co
    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
    ```
 
-   > بدونها يعمل التطبيق في وضع العرض التجريبي، وهو مخزن في ذاكرة الخادم —
-   > على Vercel يعني ذلك أن كل طلب قد يصل إلى نسخة مختلفة، فتظهر كتابات
-   > لوحة التحكم ثم تختفي. **لا تنشر بدون هذين المتغيّرين.**
+   > هذه متغيّرات **وقت البناء** لا وقت التشغيل. إضافتها بعد البناء لا تكفي —
+   > لا بد من *Trigger deploy → Clear cache and deploy site*.
+   >
+   > وبدونها يعمل التطبيق في وضع العرض التجريبي المخزَّن في ذاكرة الخادم:
+   > كل طلب قد يصل إلى نسخة مختلفة، فتظهر كتابات لوحة التحكم ثم تختفي.
+   > **لا تنشر بدونهما.**
 
-4. **أعد النشر** بعد إضافة المتغيّرات (تُحقن وقت البناء لا وقت التشغيل).
-5. **حدّث عناوين Supabase** بعد معرفة النطاق:
-   Authentication → URL Configuration → *Site URL* = نطاقك،
+4. **حدّث عناوين Supabase** بعد معرفة النطاق:
+   *Authentication → URL Configuration* → *Site URL* = نطاقك،
    و*Redirect URLs* أضف `https://<نطاقك>/auth/callback`.
    بدونها ستعيد روابط تأكيد البريد المستخدم إلى `localhost`.
+
+### ملاحظات خاصة بـ Netlify
+
+- **middleware** يعمل كدالة طرفية (Edge Function). `@supabase/ssr` متوافق معها،
+  وحماية مسارات `/dashboard` تبقى فعّالة.
+- **`next/image`** يمر عبر Netlify Image CDN تلقائياً. الصور محلية ومضغوطة
+  مسبقاً (8.7 ميغابايت)، فالتحويلات قليلة.
+- **الخطوط** تُنزَّل وقت البناء عبر `next/font`، فتُخدَّم من نطاقك لا من Google.
 
 ## بنية المشروع
 
