@@ -1,3 +1,4 @@
+import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { BookOpen, Star } from "lucide-react";
@@ -8,7 +9,14 @@ import { LiveDistance } from "./live-distance";
 import type { Restaurant } from "@/types";
 
 /** بطاقة المعاينة التي تظهر فوق الخريطة عند اختيار علامة مطعم. */
-export function RestaurantPreviewCard({ restaurant }: { restaurant: Restaurant }) {
+export function RestaurantPreviewCard({
+  restaurant,
+  directions,
+}: {
+  restaurant: Restaurant;
+  /** زر الاتجاهات — يُمرَّر من شاشة الخريطة التي تملك حالة المسار. */
+  directions?: React.ReactNode;
+}) {
   return (
     <article className="bg-surface-container-low rounded-xl shadow-level-2 overflow-hidden animate-[fade-up_260ms_cubic-bezier(0.16,1,0.3,1)]">
       <div className="relative aspect-[16/9] w-full">
@@ -65,6 +73,8 @@ export function RestaurantPreviewCard({ restaurant }: { restaurant: Restaurant }
           <BookOpen className="size-5" aria-hidden />
           عرض المنيو
         </Link>
+
+        {directions}
       </div>
     </article>
   );

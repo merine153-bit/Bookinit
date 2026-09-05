@@ -9,6 +9,7 @@ import { venueTypeOf } from "@/lib/venue";
 import { updateRestaurantAction, type ActionResult } from "@/app/actions/dashboard";
 import type { Restaurant } from "@/types";
 import { ImagePicker } from "./image-picker";
+import { LocationPicker } from "./location-picker";
 import { FormMessage, SubmitButton } from "./form-status";
 
 const TAG_OPTIONS = [
@@ -101,30 +102,11 @@ export function SettingsForm({ restaurant }: { restaurant: Restaurant }) {
         </Field>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-gutter">
-        <Field label="خط العرض" htmlFor="latitude" hint="إحداثيات موقع المطعم على الخريطة.">
-          <Input
-            id="latitude"
-            name="latitude"
-            type="number"
-            step="0.0001"
-            dir="ltr"
-            defaultValue={restaurant.latitude}
-            required
-          />
-        </Field>
-        <Field label="خط الطول" htmlFor="longitude">
-          <Input
-            id="longitude"
-            name="longitude"
-            type="number"
-            step="0.0001"
-            dir="ltr"
-            defaultValue={restaurant.longitude}
-            required
-          />
-        </Field>
-      </div>
+      <LocationPicker
+        latitude={restaurant.latitude}
+        longitude={restaurant.longitude}
+        address={restaurant.address}
+      />
 
       <Field label="رقم التواصل" htmlFor="phone">
         <Input id="phone" name="phone" dir="ltr" defaultValue={restaurant.phone ?? ""} />

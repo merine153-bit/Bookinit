@@ -1,10 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { Circle, MapContainer, Marker, TileLayer, useMap } from "react-leaflet";
+import { Circle, MapContainer, Marker, Polyline, TileLayer, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM } from "@/lib/constants";
 import type { UserPosition } from "@/hooks/use-location";
+import type { RouteResult } from "@/lib/routing";
+import { MAP_LAYERS, type MapLayer } from "@/lib/map-layers";
 import type { Restaurant } from "@/types";
 import { createRestaurantIcon, createUserLocationIcon } from "./map-marker";
 
@@ -16,20 +18,8 @@ interface MapViewProps {
   /** يتغيّر عند ضغط المستخدم على "موقعي" ليعيد توسيط الخريطة عليه. */
   recenterKey: number;
   layer: MapLayer;
+  route: RouteResult | null;
 }
-
-export type MapLayer = "streets" | "satellite";
-
-const LAYERS: Record<MapLayer, { url: string; attribution: string }> = {
-  streets: {
-    url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-  },
-  satellite: {
-    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    attribution: "صور الأقمار الصناعية &copy; Esri وMaxar وEarthstar Geographics",
-  },
-};
 
 /** يحرّك الخريطة نحو المطعم المختار. */
 function FlyToSelected({ restaurant }: { restaurant: Restaurant | undefined }) {
@@ -52,6 +42,20 @@ function FitToResults({ restaurants }: { restaurants: Restaurant[] }) {
     if (restaurants.length === 0) return;
     const bounds = restaurants.map((r) => [r.latitude, r.longitude] as [number, number]);
     map.fitBounds(bounds, { padding: [64, 64], maxZoom: 14, animate: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [signature]);
+
+  return null;
+}
+
+/** يضبط الخريطة لتشمل المسار كاملاً عند حسابه. */
+function FitToRoute({ route }: { route: RouteResult | null }) {
+  const map = useMap();
+  const signature = route ? `${route.points.length}:${route.distanceKm}` : "";
+
+  React.useEffect(() => {
+    if (!route || route.points.length === 0) return;
+    map.fitBounds(route.points, { padding: [56, 56], animate: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [signature]);
 
@@ -91,9 +95,10 @@ export default function MapView({
   userPosition,
   recenterKey,
   layer,
+  route,
 }: MapViewProps) {
   const selected = restaurants.find((r) => r.id === selectedId);
-  const tiles = LAYERS[layer];
+  const tiles = MAP_LAYERS[layer];
 
   return (
     <MapContainer
@@ -109,6 +114,21 @@ export default function MapView({
       <FitToResults restaurants={restaurants} />
       <FlyToSelected restaurant={selected} />
       <FollowUser position={userPosition} recenterKey={recenterKey} />
+      <FitToRoute route={route} />
+
+      {route && (
+        <>
+          {/* خط سفلي أعرض يمنح المسار وضوحاً فوق صور الأقمار الداكنة. */}
+          <Polyline
+            positions={route.points}
+            pathOptions={{ color: "#ffffff", weight: 9, opacity: 0.85, lineCap: "round" }}
+          />
+          <Polyline
+            positions={route.points}
+            pathOptions={{ color: "#b3290f", weight: 5, opacity: 1, lineCap: "round" }}
+          />
+        </>
+      )}
 
       {userPosition && (
         <>

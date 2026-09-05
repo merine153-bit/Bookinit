@@ -12,7 +12,9 @@ import { useUserLocation } from "@/hooks/use-location";
 import { formatDistance } from "@/lib/utils";
 import { LocateButton } from "./locate-button";
 import { LayerSwitcher } from "./layer-switcher";
-import type { MapLayer } from "./map-view";
+import { DirectionsButton, RoutePanel } from "./route-panel";
+import { fetchRoute, RoutingError, type RouteResult } from "@/lib/routing";
+import type { MapLayer } from "@/lib/map-layers";
 import { cn } from "@/lib/utils";
 import type { Restaurant } from "@/types";
 import { DEFAULT_FILTERS, DiscoverFiltersModal, type DiscoverFilters } from "./discover-filters-modal";
@@ -26,21 +28,75 @@ const MapView = dynamic(() => import("./map-view"), {
 const QUICK_FILTERS = ["المطاعم", "المقاهي", "الأعلى تقييماً"] as const;
 type QuickFilter = (typeof QUICK_FILTERS)[number] | null;
 
-export function DiscoverClient({ restaurants }: { restaurants: Restaurant[] }) {
+export function DiscoverClient({
+  restaurants,
+  initialRouteSlug,
+}: {
+  restaurants: Restaurant[];
+  /** يفتح المسار مباشرة عند القدوم من صفحة مطعم عبر ‎/discover?to=slug‎. */
+  initialRouteSlug?: string;
+}) {
   const [quick, setQuick] = React.useState<QuickFilter>("المطاعم");
   const [filters, setFilters] = React.useState<DiscoverFilters>(DEFAULT_FILTERS);
   const [filtersOpen, setFiltersOpen] = React.useState(false);
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const [recenterKey, setRecenterKey] = React.useState(0);
   const [layer, setLayer] = React.useState<MapLayer>("streets");
+  const [routeTargetId, setRouteTargetId] = React.useState<string | null>(null);
+  const [route, setRoute] = React.useState<RouteResult | null>(null);
+  const [routeLoading, setRouteLoading] = React.useState(false);
+  const [routeError, setRouteError] = React.useState<string | null>(null);
 
-  const { position, error, distanceTo } = useUserLocation();
+  const { position, error, distanceTo, start: startLocating } = useUserLocation();
+  const routeTarget = restaurants.find((r) => r.id === routeTargetId) ?? null;
 
   /** المسافة الحقيقية عند توفّر الموقع، وإلا التقديرية المخزّنة. */
   const distanceOf = React.useCallback(
     (r: Restaurant) => distanceTo(r) ?? r.distanceKm,
     [distanceTo],
   );
+
+  // القدوم من صفحة مطعم: حدّد الوجهة واطلب الموقع إن لزم.
+  React.useEffect(() => {
+    if (!initialRouteSlug) return;
+    const target = restaurants.find((r) => r.slug === initialRouteSlug);
+    if (!target) return;
+    // تصفية "المطاعم" الافتراضية تُخفي المقاهي؛ الوجهة المطلوبة صراحةً تسبقها.
+    setQuick(null);
+    setSelectedId(target.id);
+    setRouteTargetId(target.id);
+    startLocating();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialRouteSlug]);
+
+  // حساب المسار كلما تغيّرت الوجهة أو تحرّك المستخدم.
+  React.useEffect(() => {
+    if (!routeTarget || !position) {
+      setRoute(null);
+      return;
+    }
+    const controller = new AbortController();
+    setRouteLoading(true);
+    setRouteError(null);
+
+    fetchRoute(position, routeTarget, controller.signal)
+      .then((result) => {
+        setRoute(result);
+        setRouteLoading(false);
+      })
+      .catch((cause: unknown) => {
+        if ((cause as Error)?.name === "AbortError") return;
+        setRoute(null);
+        setRouteLoading(false);
+        setRouteError(
+          cause instanceof RoutingError ? cause.message : "تعذّر حساب الطريق.",
+        );
+      });
+
+    return () => controller.abort();
+    // إعادة الحساب مرتبطة بالإحداثيات نفسها، لا بمرجع كائن الموقع المتغيّر كل قراءة.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [routeTarget, position?.latitude, position?.longitude]);
 
   const results = React.useMemo(() => {
     let list = restaurants;
@@ -118,6 +174,7 @@ export function DiscoverClient({ restaurants }: { restaurants: Restaurant[] }) {
           userPosition={position}
           recenterKey={recenterKey}
           layer={layer}
+          route={route}
         />
 
         {/* مبدّل الطبقة — مقابل زر الموقع على الجهة الأخرى */}
@@ -130,8 +187,32 @@ export function DiscoverClient({ restaurants }: { restaurants: Restaurant[] }) {
           <LocateButton onRecenter={() => setRecenterKey((k) => k + 1)} />
         </div>
 
+        {/* لوحة المسار */}
+        {routeTarget && (
+          <div className="absolute inset-x-0 top-20 z-[410] px-container-margin pointer-events-none">
+            <div className="mx-auto max-w-md pointer-events-auto">
+              <RoutePanel
+                restaurant={routeTarget}
+                route={route}
+                loading={routeLoading}
+                error={
+                  routeError ??
+                  error ??
+                  (!position ? "بانتظار تحديد موقعك… الطريق يُرسم من مكانك الحالي." : null)
+                }
+                from={position}
+                onClose={() => {
+                  setRouteTargetId(null);
+                  setRoute(null);
+                  setRouteError(null);
+                }}
+              />
+            </div>
+          </div>
+        )}
+
         {/* شريط حالة الموقع */}
-        {(error || position) && (
+        {!routeTarget && (error || position) && (
           <div className="absolute inset-x-0 top-20 z-[400] px-container-margin pointer-events-none">
             <div className="mx-auto max-w-md pointer-events-auto">
               {error ? (
@@ -198,13 +279,35 @@ export function DiscoverClient({ restaurants }: { restaurants: Restaurant[] }) {
         {selected && (
           <div className="absolute inset-x-0 bottom-0 z-[400] px-container-margin pb-4 lg:hidden pointer-events-none">
             <div className="pointer-events-auto max-w-lg mx-auto">
-              <RestaurantPreviewCard restaurant={selected} />
+              <RestaurantPreviewCard
+                restaurant={selected}
+                directions={
+                  <DirectionsButton
+                    onClick={() => {
+                      setRouteTargetId(selected.id);
+                      if (!position) startLocating();
+                    }}
+                    hint={position ? undefined : "سيُطلب إذن الموقع لحساب الطريق"}
+                  />
+                }
+              />
             </div>
           </div>
         )}
         {selected && (
           <div className="hidden lg:block absolute top-24 end-gutter z-[400] w-[380px]">
-            <RestaurantPreviewCard restaurant={selected} />
+            <RestaurantPreviewCard
+              restaurant={selected}
+              directions={
+                <DirectionsButton
+                  onClick={() => {
+                    setRouteTargetId(selected.id);
+                    if (!position) startLocating();
+                  }}
+                  hint={position ? undefined : "سيُطلب إذن الموقع لحساب الطريق"}
+                />
+              }
+            />
           </div>
         )}
 

@@ -6,6 +6,7 @@ import { SaveButton } from "@/components/social/save-button";
 import { cn, openingStatus } from "@/lib/utils";
 import type { Restaurant } from "@/types";
 import { FollowButton } from "./follow-button";
+import { DirectionsLink } from "./directions-link";
 
 /** غلاف المطعم مع الشعار الدائري المتداخل وبطاقة المعلومات الأساسية. */
 export function RestaurantHero({ restaurant }: { restaurant: Restaurant }) {
@@ -91,8 +92,9 @@ export function RestaurantHero({ restaurant }: { restaurant: Restaurant }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0 pb-2">
+        <div className="flex flex-wrap items-center justify-center gap-3 shrink-0 pb-2">
           <FollowButton restaurantId={restaurant.id} restaurantName={restaurant.name} />
+          <DirectionsLink restaurant={restaurant} />
           <SaveButton
             type="restaurant"
             id={restaurant.id}

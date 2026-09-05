@@ -1,7 +1,7 @@
 "use client";
 
 import { Map as MapIcon, Satellite } from "lucide-react";
-import type { MapLayer } from "./map-view";
+import type { MapLayer } from "@/lib/map-layers";
 import { cn } from "@/lib/utils";
 
 const OPTIONS: Array<{ value: MapLayer; label: string; icon: typeof MapIcon }> = [

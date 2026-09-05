@@ -7,13 +7,17 @@ export const metadata = {
   description: "استكشف المطاعم والمقاهي القريبة منك على الخريطة.",
 };
 
-export default async function DiscoverPage() {
-  const restaurants = await listRestaurants();
+export default async function DiscoverPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ to?: string }>;
+}) {
+  const [{ to }, restaurants] = await Promise.all([searchParams, listRestaurants()]);
 
   return (
     <AppShell fullBleed>
       <h1 className="sr-only">استكشف المطاعم والمقاهي على الخريطة</h1>
-      <DiscoverClient restaurants={restaurants} />
+      <DiscoverClient restaurants={restaurants} initialRouteSlug={to} />
     </AppShell>
   );
 }
