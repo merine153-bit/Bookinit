@@ -12,6 +12,7 @@ import { MenuItemCard } from "@/components/menu/menu-item-card";
 import { SEARCH_FILTERS } from "@/lib/constants";
 import { buildSearchResults } from "@/lib/search";
 import type { MenuItem, Restaurant, SearchFilter } from "@/types";
+import { useUserLocation } from "@/hooks/use-location";
 
 const SUGGESTIONS = ["قهوة مختصة", "سوشي", "بيتزا", "حلويات", "مأكولات بحرية", "نباتي"];
 
@@ -29,6 +30,7 @@ export function SearchClient({
   const searchParams = useSearchParams();
   const [query, setQuery] = React.useState(initialQuery);
   const [filter, setFilter] = React.useState<SearchFilter>("الكل");
+  const { distanceTo, position } = useUserLocation();
 
   // إبقاء العنوان متزامناً مع البحث حتى تبقى النتيجة قابلة للمشاركة.
   React.useEffect(() => {
@@ -43,8 +45,11 @@ export function SearchClient({
   }, [query]);
 
   const results = React.useMemo(
-    () => buildSearchResults(query, filter, restaurants, items),
-    [query, filter, restaurants, items],
+    () =>
+      buildSearchResults(query, filter, restaurants, items, (r) => distanceTo(r) ?? r.distanceKm),
+    // موقع المستخدم يدخل في ترتيب "الأقرب إليك"، فيُعاد الحساب عند تغيّره.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [query, filter, restaurants, items, position?.latitude, position?.longitude],
   );
 
   const restaurantResults = results.filter((r) => r.kind === "restaurant");

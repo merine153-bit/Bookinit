@@ -1,17 +1,35 @@
 "use client";
 
 import * as React from "react";
-import { MapContainer, Marker, TileLayer, useMap } from "react-leaflet";
+import { Circle, MapContainer, Marker, TileLayer, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM } from "@/lib/constants";
+import type { UserPosition } from "@/hooks/use-location";
 import type { Restaurant } from "@/types";
-import { createRestaurantIcon } from "./map-marker";
+import { createRestaurantIcon, createUserLocationIcon } from "./map-marker";
 
 interface MapViewProps {
   restaurants: Restaurant[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  userPosition: UserPosition | null;
+  /** يتغيّر عند ضغط المستخدم على "موقعي" ليعيد توسيط الخريطة عليه. */
+  recenterKey: number;
+  layer: MapLayer;
 }
+
+export type MapLayer = "streets" | "satellite";
+
+const LAYERS: Record<MapLayer, { url: string; attribution: string }> = {
+  streets: {
+    url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  },
+  satellite: {
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    attribution: "صور الأقمار الصناعية &copy; Esri وMaxar وEarthstar Geographics",
+  },
+};
 
 /** يحرّك الخريطة نحو المطعم المختار. */
 function FlyToSelected({ restaurant }: { restaurant: Restaurant | undefined }) {
@@ -40,9 +58,42 @@ function FitToResults({ restaurants }: { restaurants: Restaurant[] }) {
   return null;
 }
 
-/** خريطة تفاعلية حقيقية (Leaflet + OpenStreetMap) بعلامات بهوية Eatit. */
-export default function MapView({ restaurants, selectedId, onSelect }: MapViewProps) {
+/** يوسّط الخريطة على موقع المستخدم عند أول قراءة وعند كل طلب "موقعي". */
+function FollowUser({
+  position,
+  recenterKey,
+}: {
+  position: UserPosition | null;
+  recenterKey: number;
+}) {
+  const map = useMap();
+  const centredOnce = React.useRef(false);
+
+  React.useEffect(() => {
+    if (!position) return;
+    const isFirstFix = !centredOnce.current;
+    if (!isFirstFix && recenterKey === 0) return;
+    centredOnce.current = true;
+    map.flyTo([position.latitude, position.longitude], Math.max(map.getZoom(), 15), {
+      duration: 0.8,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [position?.latitude, position?.longitude, recenterKey]);
+
+  return null;
+}
+
+/** خريطة تفاعلية حقيقية (Leaflet) بعلامات بهوية Eatit وطبقتَي خريطة وأقمار صناعية. */
+export default function MapView({
+  restaurants,
+  selectedId,
+  onSelect,
+  userPosition,
+  recenterKey,
+  layer,
+}: MapViewProps) {
   const selected = restaurants.find((r) => r.id === selectedId);
+  const tiles = LAYERS[layer];
 
   return (
     <MapContainer
@@ -52,13 +103,37 @@ export default function MapView({ restaurants, selectedId, onSelect }: MapViewPr
       zoomControl={false}
       className="size-full"
     >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-        maxZoom={19}
-      />
+      {/* المفتاح يجبر Leaflet على استبدال الطبقة بدل مزجها عند التبديل. */}
+      <TileLayer key={layer} url={tiles.url} attribution={tiles.attribution} maxZoom={19} />
+
       <FitToResults restaurants={restaurants} />
       <FlyToSelected restaurant={selected} />
+      <FollowUser position={userPosition} recenterKey={recenterKey} />
+
+      {userPosition && (
+        <>
+          {/* دائرة الدقة: تُظهر هامش الخطأ الذي يبلّغه الجهاز بدل ادّعاء دقة مطلقة. */}
+          <Circle
+            center={[userPosition.latitude, userPosition.longitude]}
+            radius={userPosition.accuracy}
+            pathOptions={{
+              color: "#1a73e8",
+              weight: 1,
+              opacity: 0.5,
+              fillColor: "#1a73e8",
+              fillOpacity: 0.12,
+            }}
+          />
+          <Marker
+            position={[userPosition.latitude, userPosition.longitude]}
+            icon={createUserLocationIcon()}
+            interactive={false}
+            zIndexOffset={2000}
+            alt="موقعك الحالي"
+          />
+        </>
+      )}
+
       {restaurants.map((restaurant) => (
         <Marker
           key={restaurant.id}

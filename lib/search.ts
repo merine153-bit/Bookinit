@@ -8,6 +8,8 @@ export function buildSearchResults(
   filter: SearchFilter,
   restaurants: Restaurant[],
   items: MenuItem[],
+  /** المسافة من موقع المستخدم الفعلي — تُستخدم في ترتيب "الأقرب إليك". */
+  distanceOf: (restaurant: Restaurant) => number = (r) => r.distanceKm,
 ): SearchResult[] {
   const q = normalizeArabic(query);
   const byId = new Map(restaurants.map((r) => [r.id, r]));
@@ -67,7 +69,7 @@ export function buildSearchResults(
     case "الأقرب إليك":
       restaurantResults = restaurantResults.sort((a, b) =>
         a.kind === "restaurant" && b.kind === "restaurant"
-          ? a.restaurant.distanceKm - b.restaurant.distanceKm
+          ? distanceOf(a.restaurant) - distanceOf(b.restaurant)
           : 0,
       );
       dishResults = [];

@@ -2,12 +2,17 @@
 
 import * as React from "react";
 import dynamic from "next/dynamic";
-import { MapPinOff, SlidersHorizontal } from "lucide-react";
+import { MapPinOff, Navigation, SlidersHorizontal } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { RestaurantPreviewCard } from "@/components/restaurant/restaurant-preview-card";
 import { RestaurantListItem } from "./restaurant-list-item";
 import { CAFE_CATEGORIES } from "@/lib/venue";
+import { useUserLocation } from "@/hooks/use-location";
+import { formatDistance } from "@/lib/utils";
+import { LocateButton } from "./locate-button";
+import { LayerSwitcher } from "./layer-switcher";
+import type { MapLayer } from "./map-view";
 import { cn } from "@/lib/utils";
 import type { Restaurant } from "@/types";
 import { DEFAULT_FILTERS, DiscoverFiltersModal, type DiscoverFilters } from "./discover-filters-modal";
@@ -26,6 +31,16 @@ export function DiscoverClient({ restaurants }: { restaurants: Restaurant[] }) {
   const [filters, setFilters] = React.useState<DiscoverFilters>(DEFAULT_FILTERS);
   const [filtersOpen, setFiltersOpen] = React.useState(false);
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
+  const [recenterKey, setRecenterKey] = React.useState(0);
+  const [layer, setLayer] = React.useState<MapLayer>("streets");
+
+  const { position, error, distanceTo } = useUserLocation();
+
+  /** المسافة الحقيقية عند توفّر الموقع، وإلا التقديرية المخزّنة. */
+  const distanceOf = React.useCallback(
+    (r: Restaurant) => distanceTo(r) ?? r.distanceKm,
+    [distanceTo],
+  );
 
   const results = React.useMemo(() => {
     let list = restaurants;
@@ -38,11 +53,14 @@ export function DiscoverClient({ restaurants }: { restaurants: Restaurant[] }) {
       list = list.filter((r) => filters.categories.includes(r.category));
     }
     if (filters.minRating > 0) list = list.filter((r) => r.rating >= filters.minRating);
-    if (filters.maxDistance < 20) list = list.filter((r) => r.distanceKm <= filters.maxDistance);
+    if (filters.maxDistance < 20) list = list.filter((r) => distanceOf(r) <= filters.maxDistance);
     if (filters.priceRange > 0) list = list.filter((r) => r.priceRange === filters.priceRange);
 
+    // عند معرفة الموقع، الأقرب أولاً — وهو الترتيب المتوقّع في خريطة استكشاف.
+    if (position) list = [...list].sort((a, b) => distanceOf(a) - distanceOf(b));
+
     return list;
-  }, [restaurants, quick, filters]);
+  }, [restaurants, quick, filters, position, distanceOf]);
 
   React.useEffect(() => {
     if (selectedId && !results.some((r) => r.id === selectedId)) setSelectedId(null);
@@ -63,6 +81,12 @@ export function DiscoverClient({ restaurants }: { restaurants: Restaurant[] }) {
           <h2 className="font-display text-headline-md text-on-surface">استكشف حولك</h2>
           <p className="font-body text-label-md text-on-surface-variant mt-1">
             <span className="numeric">{results.length}</span> مكان في نطاق بحثك
+            {position && (
+              <>
+                {" · "}
+                <span className="text-secondary">مرتّبة حسب قربها منك</span>
+              </>
+            )}
           </p>
         </div>
         <div className="flex-1 overflow-y-auto px-container-margin py-gutter flex flex-col gap-gutter">
@@ -87,7 +111,48 @@ export function DiscoverClient({ restaurants }: { restaurants: Restaurant[] }) {
 
       {/* الخريطة */}
       <div className="relative flex-1">
-        <MapView restaurants={results} selectedId={selectedId} onSelect={setSelectedId} />
+        <MapView
+          restaurants={results}
+          selectedId={selectedId}
+          onSelect={setSelectedId}
+          userPosition={position}
+          recenterKey={recenterKey}
+          layer={layer}
+        />
+
+        {/* مبدّل الطبقة — مقابل زر الموقع على الجهة الأخرى */}
+        <div className="absolute start-container-margin bottom-40 lg:bottom-gutter z-[400]">
+          <LayerSwitcher value={layer} onChange={setLayer} />
+        </div>
+
+        {/* زر تحديد الموقع فوق الخريطة */}
+        <div className="absolute end-gutter bottom-40 lg:bottom-gutter z-[400]">
+          <LocateButton onRecenter={() => setRecenterKey((k) => k + 1)} />
+        </div>
+
+        {/* شريط حالة الموقع */}
+        {(error || position) && (
+          <div className="absolute inset-x-0 top-20 z-[400] px-container-margin pointer-events-none">
+            <div className="mx-auto max-w-md pointer-events-auto">
+              {error ? (
+                <p
+                  role="alert"
+                  className="rounded-lg bg-error-container px-4 py-3 font-body text-label-sm text-on-error-container shadow-level-1"
+                >
+                  {error}
+                </p>
+              ) : (
+                position && (
+                  <p className="inline-flex items-center gap-2 rounded-full glass px-4 py-2 font-body text-label-sm text-on-surface shadow-level-1">
+                    <Navigation className="size-4 text-secondary" aria-hidden />
+                    موقعك محدَّد بدقة{" "}
+                    <span className="numeric">{formatDistance(position.accuracy / 1000)}</span>
+                  </p>
+                )
+              )}
+            </div>
+          </div>
+        )}
 
         {/* شريط التصفية العائم */}
         <div className="absolute top-gutter inset-x-0 z-[400] px-container-margin">

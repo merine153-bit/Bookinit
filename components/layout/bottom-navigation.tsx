@@ -8,6 +8,12 @@ import { cn } from "@/lib/utils";
 
 const ICONS = { home: Home, compass: Compass, heart: Heart, user: User };
 
+/**
+ * البوصلة تفقد شكلها تماماً عند ملئها فتصير قرصاً مصمتاً،
+ * والتصميم المرجعي يعرضها كخط حتى وهي نشطة.
+ */
+const FILL_WHEN_ACTIVE = { home: true, compass: false, heart: true, user: true };
+
 /** شريط التنقل السفلي — يظهر على الجوال فقط، بخلفية زجاجية ثابتة أسفل الشاشة. */
 export function BottomNavigation() {
   const pathname = usePathname();
@@ -34,7 +40,7 @@ export function BottomNavigation() {
               >
                 <Icon
                   className={cn("size-6 transition-transform", active && "scale-110")}
-                  fill={active ? "currentColor" : "none"}
+                  fill={active && FILL_WHEN_ACTIVE[item.icon] ? "currentColor" : "none"}
                   aria-hidden
                 />
                 <span className={cn("font-body text-label-sm", active && "font-semibold")}>

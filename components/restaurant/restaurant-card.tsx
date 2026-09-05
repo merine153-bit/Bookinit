@@ -1,12 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-import { MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { VenueTypeBadge } from "@/components/ui/venue-type-badge";
 import { Card } from "@/components/ui/card";
 import { Rating } from "@/components/ui/rating";
 import { SaveButton } from "@/components/social/save-button";
-import { formatDistance } from "@/lib/utils";
+import { LiveDistance } from "./live-distance";
 import type { Restaurant } from "@/types";
 
 /** بطاقة مطعم قياسية — تُستخدم في البحث والمحفوظات والقوائم الجانبية. */
@@ -38,9 +37,12 @@ export function RestaurantCard({
             />
           </div>
         )}
-        <span className="absolute bottom-3 end-3 inline-flex items-center gap-1 rounded-full bg-surface/90 backdrop-blur-sm px-3 py-1 text-label-sm text-on-surface shadow-level-1">
-          <MapPin className="size-3.5" aria-hidden />
-          <span className="numeric">{formatDistance(restaurant.distanceKm)}</span>
+        <span className="absolute bottom-3 end-3 rounded-full bg-surface/90 backdrop-blur-sm px-3 py-1 text-label-sm text-on-surface shadow-level-1">
+          <LiveDistance
+            latitude={restaurant.latitude}
+            longitude={restaurant.longitude}
+            fallbackKm={restaurant.distanceKm}
+          />
         </span>
       </div>
 

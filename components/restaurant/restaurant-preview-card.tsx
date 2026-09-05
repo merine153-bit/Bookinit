@@ -1,9 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import { BookOpen, MapPin, Star } from "lucide-react";
+import { BookOpen, Star } from "lucide-react";
 import { SaveButton } from "@/components/social/save-button";
 import { VenueTypeBadge } from "@/components/ui/venue-type-badge";
-import { formatDistance, formatRating } from "@/lib/utils";
+import { formatRating } from "@/lib/utils";
+import { LiveDistance } from "./live-distance";
 import type { Restaurant } from "@/types";
 
 /** بطاقة المعاينة التي تظهر فوق الخريطة عند اختيار علامة مطعم. */
@@ -25,9 +26,14 @@ export function RestaurantPreviewCard({ restaurant }: { restaurant: Restaurant }
             className="size-10 rounded-full bg-surface/90 backdrop-blur-sm flex items-center justify-center shadow-level-1"
           />
         </div>
-        <span className="absolute bottom-4 end-4 inline-flex items-center gap-1.5 rounded-lg bg-surface/90 backdrop-blur-sm px-3 py-1.5 text-label-md text-on-surface shadow-level-1">
-          <MapPin className="size-4" aria-hidden />
-          <span className="numeric">{formatDistance(restaurant.distanceKm)}</span>
+        <span className="absolute bottom-4 end-4 rounded-lg bg-surface/90 backdrop-blur-sm px-3 py-1.5 text-label-md text-on-surface shadow-level-1">
+          <LiveDistance
+            latitude={restaurant.latitude}
+            longitude={restaurant.longitude}
+            fallbackKm={restaurant.distanceKm}
+            iconClassName="size-4"
+            className="gap-1.5"
+          />
         </span>
       </div>
 

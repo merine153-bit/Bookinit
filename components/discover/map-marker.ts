@@ -40,3 +40,22 @@ export function createRestaurantIcon(restaurant: Restaurant, active: boolean): L
     iconAnchor: [0, 0],
   });
 }
+
+/**
+ * علامة موقع المستخدم: نقطة زرقاء بحلقة بيضاء.
+ * الأزرق هنا خروج مقصود عن لوحة العلامة التجارية — فهو العُرف العالمي
+ * لـ"أنت هنا"، ويجب ألا يُخلط بالأحمر (مطاعم) ولا بالأخضر (مقاهٍ).
+ */
+export function createUserLocationIcon(): L.DivIcon {
+  const html = `
+    <div style="transform:translate(-50%,-50%);position:relative;width:22px;height:22px;">
+      <span style="position:absolute;inset:0;border-radius:9999px;background:#1a73e8;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.35);"></span>
+    </div>`;
+
+  return L.divIcon({
+    className: "eatit-marker",
+    html,
+    iconSize: [22, 22],
+    iconAnchor: [0, 0],
+  });
+}

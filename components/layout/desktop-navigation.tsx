@@ -8,6 +8,12 @@ import { cn } from "@/lib/utils";
 
 const ICONS = { home: Home, compass: Compass, heart: Heart, user: User };
 
+/**
+ * البوصلة تفقد شكلها تماماً عند ملئها فتصير قرصاً مصمتاً،
+ * والتصميم المرجعي يعرضها كخط حتى وهي نشطة.
+ */
+const FILL_WHEN_ACTIVE = { home: true, compass: false, heart: true, user: true };
+
 /** روابط التنقل داخل الشريط العلوي — بديل شريط الجوال السفلي على الشاشات الكبيرة. */
 export function DesktopNavigation({ className }: { className?: string }) {
   const pathname = usePathname();
@@ -29,7 +35,7 @@ export function DesktopNavigation({ className }: { className?: string }) {
                 : "text-on-surface-variant hover:bg-surface-container-high/60 hover:text-on-surface",
             )}
           >
-            <Icon className="size-5" fill={active ? "currentColor" : "none"} aria-hidden />
+            <Icon className="size-5" fill={active && FILL_WHEN_ACTIVE[item.icon] ? "currentColor" : "none"} aria-hidden />
             {item.label}
           </Link>
         );

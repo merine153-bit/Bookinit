@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Be_Vietnam_Pro, Cairo, IBM_Plex_Sans_Arabic, Montserrat } from "next/font/google";
 import { AppStateProvider } from "@/hooks/use-app-state";
+import { LocationProvider } from "@/hooks/use-location";
 import { ToastProvider } from "@/components/ui/toast";
 import "./globals.css";
 
@@ -79,7 +80,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           تخطَّ إلى المحتوى الرئيسي
         </a>
         <AppStateProvider>
-          <ToastProvider>{children}</ToastProvider>
+          <LocationProvider>
+            <ToastProvider>{children}</ToastProvider>
+          </LocationProvider>
         </AppStateProvider>
       </body>
     </html>
