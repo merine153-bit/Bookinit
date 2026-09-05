@@ -4,6 +4,7 @@ import { requireDashboardRestaurant } from "@/components/dashboard/dashboard-she
 import { DashboardActionCard } from "@/components/dashboard/dashboard-action-card";
 import { AnalyticsCard } from "@/components/dashboard/analytics-card";
 import { ActivityList } from "@/components/dashboard/activity-list";
+import { VenueTypeBadge } from "@/components/ui/venue-type-badge";
 import { buttonVariants } from "@/components/ui/button";
 import { listActivity, listMenuItems, listReviews } from "@/lib/data/repository";
 import { cn, formatRating } from "@/lib/utils";
@@ -23,6 +24,12 @@ export default async function DashboardHome() {
           <h1 className="font-display text-headline-mobile md:text-headline-lg text-on-surface mb-stack-sm">
             مرحباً، {restaurant.name}
           </h1>
+          <div className="flex flex-wrap items-center gap-2 mb-stack-sm">
+            <VenueTypeBadge category={restaurant.category} size="sm" />
+            <span className="font-body text-label-sm text-on-surface-variant">
+              {restaurant.category}
+            </span>
+          </div>
           <p className="font-body text-body-md text-on-surface-variant">
             نظرة عامة على أداء متجرك اليوم.
           </p>

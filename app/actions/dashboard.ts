@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { canManageRestaurants, getCurrentUser, getOwnedRestaurantId } from "@/lib/auth";
+import { RESTAURANT_CATEGORIES } from "@/lib/constants";
+import type { RestaurantCategory } from "@/types";
 import {
   createMenuCategory,
   createMenuItem,
@@ -227,6 +229,9 @@ export async function deletePostAction(formData: FormData): Promise<void> {
 
 const settingsSchema = z.object({
   name: z.string().min(2, "اسم المطعم مطلوب"),
+  category: z.enum(RESTAURANT_CATEGORIES as unknown as [string, ...string[]], {
+    errorMap: () => ({ message: "اختر فئة صحيحة" }),
+  }),
   description: z.string().min(10, "أضف وصفاً للمطعم"),
   shortDescription: z.string().min(5, "أضف وصفاً مختصراً"),
   address: z.string().min(3, "العنوان مطلوب"),
@@ -248,6 +253,7 @@ export async function updateRestaurantAction(
     const phone = String(formData.get("phone") ?? "").trim();
     const parsed = settingsSchema.safeParse({
       name: formData.get("name"),
+      category: formData.get("category"),
       description: formData.get("description"),
       shortDescription: formData.get("shortDescription"),
       address: formData.get("address"),
@@ -266,7 +272,10 @@ export async function updateRestaurantAction(
       return { ok: false, message: parsed.error.issues[0]?.message ?? "تحقق من الحقول المدخلة." };
     }
 
-    await updateRestaurant(restaurantId, parsed.data);
+    await updateRestaurant(restaurantId, {
+      ...parsed.data,
+      category: parsed.data.category as RestaurantCategory,
+    });
     refreshDashboard();
     return { ok: true, message: "تم حفظ إعدادات المطعم." };
   } catch (error) {

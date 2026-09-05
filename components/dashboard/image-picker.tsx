@@ -2,24 +2,30 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { ImagePlus } from "lucide-react";
+import { ImagePlus, Loader2, Upload } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/field";
 import { IMAGE_LIBRARY, imagePath } from "@/lib/image-library";
+import { ACCEPTED_TYPES } from "@/lib/image-compress";
+import { useImageUpload } from "@/hooks/use-image-upload";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { cn } from "@/lib/utils";
 
 /**
- * اختيار صورة من المكتبة المرفقة أو عبر رابط مباشر.
- * عند تفعيل Supabase Storage يمكن استبدال هذا المكوّن برفع ملفات فعلي.
+ * اختيار صورة لمحتوى المطعم بثلاث طرق:
+ * رفع من الجهاز (الأساسية)، أو من مكتبة الصور المرفقة، أو برابط مباشر.
  */
 export function ImagePicker({
   name,
+  restaurantId,
   defaultValue = "",
   label = "صورة",
   aspect = "aspect-[16/10]",
 }: {
   name: string;
+  /** مجلد الرفع في التخزين — يضمن ألا يكتب صاحب مطعم في مجلد غيره. */
+  restaurantId?: string;
   defaultValue?: string;
   label?: string;
   aspect?: string;
@@ -27,6 +33,22 @@ export function ImagePicker({
   const [value, setValue] = React.useState(defaultValue);
   const [open, setOpen] = React.useState(false);
   const [urlDraft, setUrlDraft] = React.useState("");
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const { uploading, error, upload, clearError } = useImageUpload(restaurantId);
+
+  const canUpload = isSupabaseConfigured && Boolean(restaurantId);
+
+  const onFileChosen = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = ""; // يسمح بإعادة اختيار الملف نفسه
+    if (!file) return;
+
+    const url = await upload(file);
+    if (url) {
+      setValue(url);
+      setOpen(false);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-2">
@@ -52,16 +74,74 @@ export function ImagePicker({
         )}
       </button>
 
-      <Modal open={open} onClose={() => setOpen(false)} title="اختر صورة" variant="drawer">
+      <Modal
+        open={open}
+        onClose={() => {
+          clearError();
+          setOpen(false);
+        }}
+        title={`اختيار ${label}`}
+        variant="drawer"
+      >
+        {/* ١) الرفع من الجهاز */}
+        <div className="mb-stack-lg">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept={ACCEPTED_TYPES.join(",")}
+            onChange={onFileChosen}
+            className="sr-only"
+            aria-label="اختر صورة من جهازك"
+          />
+          <Button
+            size="full"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={!canUpload || uploading}
+            data-autofocus
+          >
+            {uploading ? (
+              <>
+                <Loader2 className="size-5 animate-spin" aria-hidden />
+                جارٍ رفع الصورة…
+              </>
+            ) : (
+              <>
+                <Upload className="size-5" aria-hidden />
+                رفع من الجهاز
+              </>
+            )}
+          </Button>
+
+          <p className="font-body text-label-sm text-on-surface-variant mt-2 text-center">
+            {canUpload
+              ? "JPEG أو PNG أو WebP — حتى 5 ميغابايت. تُضغط الصورة تلقائياً قبل الرفع."
+              : "الرفع من الجهاز يتطلب ربط قاعدة البيانات."}
+          </p>
+
+          {error && (
+            <p role="alert" className="mt-stack-md rounded-lg bg-error-container px-4 py-3 font-body text-label-md text-on-error-container">
+              {error}
+            </p>
+          )}
+        </div>
+
+        <div className="flex items-center gap-4 mb-stack-lg">
+          <hr className="flex-1 border-t border-outline-variant/40" />
+          <span className="font-body text-label-sm text-on-surface-variant">أو اختر جاهزة</span>
+          <hr className="flex-1 border-t border-outline-variant/40" />
+        </div>
+
+        {/* ٢) رابط مباشر */}
         <div className="flex gap-2 mb-stack-lg">
           <Input
             value={urlDraft}
             onChange={(event) => setUrlDraft(event.target.value)}
-            placeholder="أو الصق رابط صورة…"
+            placeholder="الصق رابط صورة…"
             dir="ltr"
             aria-label="رابط صورة"
           />
           <Button
+            variant="secondary"
             onClick={() => {
               if (!urlDraft.trim()) return;
               setValue(urlDraft.trim());
@@ -73,6 +153,7 @@ export function ImagePicker({
           </Button>
         </div>
 
+        {/* ٣) المكتبة المرفقة */}
         <ul className="grid grid-cols-3 sm:grid-cols-4 gap-2">
           {IMAGE_LIBRARY.map((image) => {
             const path = imagePath(image);

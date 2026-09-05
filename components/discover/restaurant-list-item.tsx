@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { MapPin, Star } from "lucide-react";
 import { cn, formatDistance, formatRating } from "@/lib/utils";
+import { venueTypeOf } from "@/lib/venue";
 import type { Restaurant } from "@/types";
 
 /**
@@ -52,9 +53,13 @@ export function RestaurantListItem({
         <span className="font-body text-label-sm text-on-surface-variant line-clamp-2">
           {restaurant.shortDescription}
         </span>
-        <span className="inline-flex items-center gap-1 font-body text-label-sm text-on-surface-variant/80">
-          <MapPin className="size-3.5" aria-hidden />
-          <span className="numeric">{formatDistance(restaurant.distanceKm)}</span>
+        <span className="flex items-center gap-2 font-body text-label-sm text-on-surface-variant/80">
+          <span className="inline-flex items-center gap-1">
+            <MapPin className="size-3.5" aria-hidden />
+            <span className="numeric">{formatDistance(restaurant.distanceKm)}</span>
+          </span>
+          <span aria-hidden>•</span>
+          <span>{venueTypeOf(restaurant.category)}</span>
         </span>
       </span>
     </button>

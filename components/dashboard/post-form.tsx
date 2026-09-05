@@ -7,12 +7,17 @@ import { ImagePicker } from "./image-picker";
 import { FormMessage, SubmitButton } from "./form-status";
 
 /** نموذج نشر تحديث في التغذية الاجتماعية. */
-export function PostForm() {
+export function PostForm({ restaurantId }: { restaurantId: string }) {
   const [state, formAction] = useActionState<ActionResult | null, FormData>(createPostAction, null);
 
   return (
     <form action={formAction} className="flex flex-col gap-gutter max-w-2xl">
-      <ImagePicker name="imageUrl" label="صورة المنشور" aspect="aspect-[4/5] max-h-96 mx-auto" />
+      <ImagePicker
+        name="imageUrl"
+        restaurantId={restaurantId}
+        label="صورة المنشور"
+        aspect="aspect-[4/5] max-h-96 mx-auto"
+      />
 
       <Field label="نص المنشور" htmlFor="caption">
         <Textarea id="caption" name="caption" rows={4} required maxLength={280} />

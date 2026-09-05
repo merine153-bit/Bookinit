@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { VenueTypeBadge } from "@/components/ui/venue-type-badge";
 import { Card } from "@/components/ui/card";
 import { Rating } from "@/components/ui/rating";
 import { SaveButton } from "@/components/social/save-button";
@@ -55,8 +56,9 @@ export function RestaurantCard({
         <p className="font-body text-label-sm text-on-surface-variant line-clamp-2">
           {restaurant.shortDescription}
         </p>
-        <div className="flex flex-wrap gap-1.5 mt-auto pt-2">
-          <Badge tone="forest">{restaurant.category}</Badge>
+        <div className="flex flex-wrap items-center gap-1.5 mt-auto pt-2">
+          <VenueTypeBadge category={restaurant.category} size="sm" />
+          <Badge tone="neutral">{restaurant.category}</Badge>
           {restaurant.isVerified && <Badge tone="neutral">موثّق</Badge>}
         </div>
       </div>

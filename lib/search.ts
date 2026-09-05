@@ -1,8 +1,6 @@
 import { normalizeArabic } from "@/lib/utils";
+import { CAFE_CATEGORIES } from "@/lib/venue";
 import type { MenuItem, Restaurant, SearchFilter, SearchResult } from "@/types";
-
-/** فئات تُعامل كـ"مقاهي" في التصفية. */
-export const CAFE_CATEGORIES = new Set(["مقاهي", "قهوة مختصة", "مخابز", "حلويات"]);
 
 /** منطق البحث مشترك بين الخادم والعميل حتى تتطابق النتائج. */
 export function buildSearchResults(

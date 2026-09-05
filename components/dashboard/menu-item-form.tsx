@@ -13,10 +13,12 @@ import { FormMessage, SubmitButton } from "./form-status";
 /** نموذج إضافة/تعديل صنف من القائمة. */
 export function MenuItemForm({
   categories,
+  restaurantId,
   item,
   defaultCurrency = "ر.س",
 }: {
   categories: MenuCategory[];
+  restaurantId: string;
   item?: MenuItem;
   defaultCurrency?: string;
 }) {
@@ -36,7 +38,7 @@ export function MenuItemForm({
     <form action={formAction} className="flex flex-col gap-gutter max-w-2xl">
       {item && <input type="hidden" name="id" value={item.id} />}
 
-      <ImagePicker name="imageUrl" defaultValue={item?.imageUrl ?? ""} label="صورة الصنف" />
+      <ImagePicker name="imageUrl" restaurantId={restaurantId} defaultValue={item?.imageUrl ?? ""} label="صورة الصنف" />
 
       <Field label="اسم الصنف" htmlFor="name">
         <Input id="name" name="name" defaultValue={item?.name} required maxLength={80} />

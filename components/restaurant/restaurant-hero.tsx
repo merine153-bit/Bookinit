@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { BadgeCheck, Clock, MapPin, Phone } from "lucide-react";
 import { Rating } from "@/components/ui/rating";
+import { VenueTypeBadge } from "@/components/ui/venue-type-badge";
 import { SaveButton } from "@/components/social/save-button";
 import { cn, openingStatus } from "@/lib/utils";
 import type { Restaurant } from "@/types";
@@ -46,6 +47,13 @@ export function RestaurantHero({ restaurant }: { restaurant: Restaurant }) {
                 aria-label="حساب موثّق"
               />
             )}
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mb-stack-md">
+            <VenueTypeBadge category={restaurant.category} />
+            <span className="font-body text-label-md text-on-surface-variant">
+              {restaurant.category}
+            </span>
           </div>
 
           <p className="font-body text-body-md text-on-surface-variant max-w-2xl mx-auto md:mx-0">

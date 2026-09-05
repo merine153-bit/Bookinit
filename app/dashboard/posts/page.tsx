@@ -79,7 +79,7 @@ export default async function DashboardPostsPage() {
         <aside aria-label="نشر تحديث جديد">
           <Card className="p-gutter lg:sticky lg:top-[96px]">
             <h2 className="font-display text-headline-md text-on-surface mb-stack-md">تحديث جديد</h2>
-            <PostForm />
+            <PostForm restaurantId={restaurant.id} />
           </Card>
         </aside>
       </div>

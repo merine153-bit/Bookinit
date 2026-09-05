@@ -80,7 +80,7 @@ export default async function DashboardStoriesPage() {
         <aside aria-label="نشر قصة جديدة">
           <Card className="p-gutter lg:sticky lg:top-[96px]">
             <h2 className="font-display text-headline-md text-on-surface mb-stack-md">قصة جديدة</h2>
-            <StoryForm defaultTitle={restaurant.name} />
+            <StoryForm defaultTitle={restaurant.name} restaurantId={restaurant.id} />
           </Card>
         </aside>
       </div>

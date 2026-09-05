@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { RestaurantPreviewCard } from "@/components/restaurant/restaurant-preview-card";
 import { RestaurantListItem } from "./restaurant-list-item";
-import { CAFE_CATEGORIES } from "@/lib/search";
+import { CAFE_CATEGORIES } from "@/lib/venue";
 import { cn } from "@/lib/utils";
 import type { Restaurant } from "@/types";
 import { DEFAULT_FILTERS, DiscoverFiltersModal, type DiscoverFilters } from "./discover-filters-modal";

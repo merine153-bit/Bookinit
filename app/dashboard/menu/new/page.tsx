@@ -41,6 +41,7 @@ export default async function NewMenuItemPage() {
       ) : (
         <MenuItemForm
           categories={categories}
+          restaurantId={restaurant.id}
           defaultCurrency={items[0]?.currency ?? "ر.س"}
         />
       )}

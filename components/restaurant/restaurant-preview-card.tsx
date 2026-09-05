@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { BookOpen, MapPin, Star } from "lucide-react";
 import { SaveButton } from "@/components/social/save-button";
+import { VenueTypeBadge } from "@/components/ui/venue-type-badge";
 import { formatDistance, formatRating } from "@/lib/utils";
 import type { Restaurant } from "@/types";
 
@@ -44,6 +45,8 @@ export function RestaurantPreviewCard({ restaurant }: { restaurant: Restaurant }
             </span>
           </span>
         </div>
+
+        <VenueTypeBadge category={restaurant.category} size="sm" className="self-start" />
 
         <p className="font-body text-body-md text-on-surface-variant">{restaurant.shortDescription}</p>
 

@@ -29,7 +29,7 @@ export default async function EditMenuItemPage({ params }: { params: Promise<{ i
         </h1>
       </div>
 
-      <MenuItemForm categories={categories} item={item} />
+      <MenuItemForm categories={categories} restaurantId={restaurant.id} item={item} />
     </div>
   );
 }

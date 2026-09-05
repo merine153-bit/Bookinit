@@ -1,7 +1,6 @@
 import L from "leaflet";
 import type { Restaurant } from "@/types";
-
-const CAFE_CATEGORIES = new Set(["مقاهي", "قهوة مختصة", "مخابز", "حلويات"]);
+import { isCafe as isCafeVenue } from "@/lib/venue";
 
 const UTENSILS_PATH =
   '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>';
@@ -17,7 +16,7 @@ const svg = (path: string, size: number) =>
  * العلامة النشطة أكبر وتحمل اسم المكان أسفلها.
  */
 export function createRestaurantIcon(restaurant: Restaurant, active: boolean): L.DivIcon {
-  const isCafe = CAFE_CATEGORIES.has(restaurant.category);
+  const isCafe = isCafeVenue(restaurant);
   const size = active ? 56 : 40;
   const iconSize = active ? 28 : 22;
   const shape = isCafe ? "border-radius:14px;background:#2e6767;" : "border-radius:9999px;background:#b3290f;";
